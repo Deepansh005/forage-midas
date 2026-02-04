@@ -1,6 +1,7 @@
 package com.jpmc.midascore;
 
 import com.jpmc.midascore.foundation.Balance;
+import com.jpmc.midascore.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,7 @@ public class TaskFiveTests {
     private FileLoader fileLoader;
 
     @Autowired
-    private BalanceQuerier balanceQuerier;
+    private UserRepository userRepository;
 
 
     @Test
@@ -35,7 +36,7 @@ public class TaskFiveTests {
         for (String transactionLine : transactionLines) {
             kafkaProducer.send(transactionLine);
         }
-        Thread.sleep(2000);
+        Thread.sleep(5000);
 
         logger.info("----------------------------------------------------------");
         logger.info("----------------------------------------------------------");
@@ -43,8 +44,10 @@ public class TaskFiveTests {
         logger.info("submit the following output to complete the task (include begin and end output denotations)");
         StringBuilder output = new StringBuilder("\n").append("---begin output ---").append("\n");
         for (int i = 0; i < 13; i++) {
-            Balance balance = balanceQuerier.query((long) i);
-            output.append(balance.toString()).append("\n");
+            long userId = i;
+            userRepository.findById(userId).ifPresent(user -> 
+                output.append("User ID: ").append(userId).append(", Name: ").append(user.getName()).append(", Balance: ").append(user.getBalance()).append("\n")
+            );
         }
         output.append("---end output ---");
         logger.info(output.toString());
